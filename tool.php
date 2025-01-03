@@ -3,8 +3,9 @@
 declare(strict_types=1);
 
 namespace {
-    use App\Commands\Dispatcher;
+
     use App\Config\Environment;
+    use App\Dispatcher;
 
     require 'vendor/autoload.php';
 

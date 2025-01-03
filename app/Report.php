@@ -71,6 +71,14 @@ class Report
         return $html;
     }
 
+    protected function getLink(int $itemId): string
+    {
+        return \sprintf(
+            'https://www.wowhead.com/item=%d',
+            $itemId,
+        );
+    }
+
     public function getHTML(): string
     {
         $html = $this->generateHeader();
@@ -80,7 +88,8 @@ class Report
             $html .= '<tr>' . \PHP_EOL;
             $html .= '<td class="p-1">' . \PHP_EOL;
             $html .= \sprintf(
-                '<a href="#" data-wowhead="item=%1$d">(item #%1$d)</a>',
+                '<a href="%1$s" target="_blank" data-wowhead="item=%2$d">(item #%2$d)</a>',
+                $this->getLink($itemId),
                 $itemId,
             );
 

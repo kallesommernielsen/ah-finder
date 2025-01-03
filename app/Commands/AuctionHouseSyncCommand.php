@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Commands;
 
+use App\Command;
+use App\CommandName;
+
 #[CommandName('sync-ah')]
 class AuctionHouseSyncCommand extends Command
 {

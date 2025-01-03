@@ -11,6 +11,7 @@ use Blizzard\WorldOfWarcraft\Region;
 class Environment
 {
     public readonly Client $client;
+    public readonly string $configFile;
     public readonly string $realmCacheFile;
     public readonly string $auctionHouseDirectory;
     public readonly array $realmBlacklist;
@@ -46,6 +47,7 @@ class Environment
             throw new \RuntimeException('Auction house save directory does not exists');
         }
 
+        $this->configFile = $ini->file;
         $this->realmCacheFile = $ini->getString('database.realms');
         $this->auctionHouseDirectory = $ini->getString('database.auction_houses');
         $this->realmBlacklist = $ini->getIntArray('database.blacklisted_realms');

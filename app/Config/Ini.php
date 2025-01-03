@@ -10,6 +10,7 @@ class Ini
      * @param array<mixed> $directives
      */
     final public function __construct(
+        public readonly string $file,
         protected array $directives = [],
     ) {
     }
@@ -17,6 +18,7 @@ class Ini
     public static function fromFile(string $file): static
     {
         return new static(
+            file: $file,
             directives: [
                 ...(\parse_ini_file($file, true, \INI_SCANNER_TYPED) ?: []),
             ],
