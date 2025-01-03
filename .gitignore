@@ -1,0 +1,5 @@
+/.idea
+/db/auction_houses/*.json
+/db/realms.json
+/vendor
+/report.html

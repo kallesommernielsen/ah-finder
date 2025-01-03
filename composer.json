@@ -1,0 +1,23 @@
+{
+  "name": "kallesommernielsen/ah-finder",
+  "description": "Auction House finder tool for World of Warcraft",
+  "minimum-stability": "stable",
+  "license": "MIT",
+  "version": "0.1.0",
+  "authors": [
+    {
+      "name": "Kalle Sommer Nielsen",
+      "email": "kalle@php.net"
+    }
+  ],
+  "require": {
+    "php": ">=8.3",
+    "ext-curl":  "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Blizzard\\": "src/Blizzard/",
+      "App\\": "app/"
+    }
+  }
+}
