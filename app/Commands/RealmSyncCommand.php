@@ -35,12 +35,23 @@ class RealmSyncCommand extends Command
 
             $slugs = [];
 
-            if (gettype($connectedRealm->realms) === 'NULL') {
-                var_dump($id, $connectedRealm);
+            if (
+                !\property_exists($connectedRealm, 'realms') ||
+                \gettype($connectedRealm->realms) === 'NULL'
+            ) {
+                continue;
             }
 
             foreach ($connectedRealm->realms as $realm) {
+                if (\in_array($realm->category, $this->env->realmCategoryBlacklist)) {
+                    continue;
+                }
+
                 $slugs[] = $realm->slug;
+            }
+
+            if (\sizeof($slugs) === 0) {
+                continue;
             }
 
             $realms[] = [

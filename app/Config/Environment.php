@@ -15,6 +15,7 @@ class Environment
     public readonly string $realmCacheFile;
     public readonly string $auctionHouseDirectory;
     public readonly array $realmBlacklist;
+    public readonly array $realmCategoryBlacklist;
     public readonly array $itemList;
     public readonly array $itemListTags;
 
@@ -51,6 +52,7 @@ class Environment
         $this->realmCacheFile = $ini->getString('database.realms');
         $this->auctionHouseDirectory = $ini->getString('database.auction_houses');
         $this->realmBlacklist = $ini->getIntArray('database.blacklisted_realms');
+        $this->realmCategoryBlacklist = $ini->getStringArray('database.blacklisted_categories');
         [$this->itemList, $this->itemListTags] = $this->getItemList($ini);
     }
 
@@ -74,6 +76,10 @@ class Environment
             } catch (\Throwable) {
                 continue;
             }
+        }
+
+        if (\array_key_exists('test', $tags)) {
+            $items = $ini->getIntArray('test.item');
         }
 
         return [
