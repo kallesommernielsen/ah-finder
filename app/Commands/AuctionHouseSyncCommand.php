@@ -12,14 +12,16 @@ class AuctionHouseSyncCommand extends Command
 {
     public function run(): void
     {
-        foreach ($this->loadRealms() as $realm) {
-            $this->write($this->getRealmSlug($realm));
-
-            $this->saveAuctionHouse(
+        $this->env->client->getBatchedAuctions(
+            realms: $this->loadRealms(),
+            startCallback: fn(\stdClass $realm) => $this->write(
+                output: $this->getRealmSlug($realm),
+            ),
+            endCallback: fn (\stdClass $realm, string $auctionHouse) => $this->saveAuctionHouse(
                 realm: $realm,
-                auctionHouse: $this->env->client->getAuctions($realm->id),
-            );
-        }
+                auctionHouse: $auctionHouse,
+            )
+        );
     }
 
     protected function loadRealms(): array

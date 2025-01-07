@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Blizzard\WorldOfWarcraft;
 
+use Blizzard\CurlBatchManager;
+
 class Client
 {
     protected \CurlHandle $curlHandle;
@@ -89,7 +91,8 @@ class Client
         array $query = [],
         array $headers = [],
         bool $decode = true,
-    ): \stdClass|string {
+        bool $execute = true,
+    ): \stdClass|string|null {
         $query['locale'] ??= $this->getLocale()->format();
         $headers['Authorization'] = \sprintf(
             'Bearer %s',
@@ -125,6 +128,10 @@ class Client
                 \array_values($headers),
             ),
         );
+
+        if (!$execute) {
+            return null;
+        }
 
         $returnValue = \curl_exec($this->curlHandle);
 
@@ -190,5 +197,36 @@ class Client
             ],
             decode: false,
         );
+    }
+
+    public function getBatchedAuctions(
+        array $realms,
+        \Closure $startCallback,
+        \closure $endCallback,
+    ): void {
+        $batchManager = new CurlBatchManager(
+            startCallback: $startCallback,
+            endCallback: $endCallback,
+        );
+
+        foreach ($realms as $realm) {
+            $this->request(
+                endpoint: Endpoint::AUCTIONS,
+                arguments: [
+                    $realm->id,
+                ],
+                query: [
+                    'namespace' => $this->region->dynamicNamespace(),
+                ],
+                execute: false,
+            );
+
+            $batchManager->add(
+                curlHandle: clone $this->curlHandle,
+                callbackData: $realm,
+            );
+        }
+
+        $batchManager->run();
     }
 }
