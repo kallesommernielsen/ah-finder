@@ -17,11 +17,9 @@ class Report
     {
         return \sprintf(
             '%d <img src="https://wow.zamimg.com/images/icons/money-gold.gif"> ' .
-            '%d <img src="https://wow.zamimg.com/images/icons/money-silver.gif">' .
-            '%d <img src="https://wow.zamimg.com/images/icons/money-copper.gif">',
+            '%d <img src="https://wow.zamimg.com/images/icons/money-silver.gif">',
             \substr((string) $amount, 0, -4),
             \substr((string) $amount, -4, 2),
-            \substr((string) $amount, -2, 2),
         );
     }
 

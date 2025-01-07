@@ -9,7 +9,6 @@ class CurlBatchManager
     public function __construct(
         protected readonly \Closure $startCallback,
         protected readonly \Closure $endCallback,
-        protected readonly int $maxActive = 200,
     ) {
     }
 
@@ -28,7 +27,7 @@ class CurlBatchManager
     {
         $mh = \curl_multi_init();
 
-        for ($i = 0; $i < $this->maxActive; ++$i) {
+        for ($i = 0, $l = \sizeof($this->batch); $i < $l; ++$i) {
             $this->startNextAvailableHandle($mh);
         }
 

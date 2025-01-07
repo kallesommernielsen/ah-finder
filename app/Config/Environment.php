@@ -15,6 +15,7 @@ class Environment
     public readonly string $auctionHouseDirectory;
     public readonly array $realmBlacklist;
     public readonly array $realmCategoryBlacklist;
+    public readonly array $itemNamespaceRootBlacklist;
     public readonly array $itemList;
     public readonly array $itemListTags;
 
@@ -51,6 +52,7 @@ class Environment
         $this->auctionHouseDirectory = $ini->getString('database.auction_houses');
         $this->realmBlacklist = $ini->getIntArray('database.blacklisted_realms');
         $this->realmCategoryBlacklist = $ini->getStringArray('database.blacklisted_categories');
+        $this->itemNamespaceRootBlacklist = $ini->getStringArray('database.blacklisted_namespace_roots');
         [$this->itemList, $this->itemListTags] = $this->getItemList($ini);
     }
 
@@ -64,13 +66,19 @@ class Environment
                 continue;
             }
 
+            $namespaceParts = \explode('/', $namespace);
+
+            if (\in_array($namespaceParts[0], $this->itemNamespaceRootBlacklist)) {
+                continue;
+            }
+
             try {
                 $items = \array_merge(
                     $items,
                     $ini->getItemArray($namespace . '.item'),
                 );
 
-                foreach (\explode('/', $namespace) as $nsTag) {
+                foreach ($namespaceParts as $nsTag) {
                     $tags[$nsTag] ??= [];
 
                     \array_push($tags[$nsTag], ...$ini->getItemIdArray($namespace . '.item'));
