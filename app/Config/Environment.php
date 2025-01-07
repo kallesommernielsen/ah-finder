@@ -11,7 +11,6 @@ use Blizzard\WorldOfWarcraft\Region;
 class Environment
 {
     public readonly Client $client;
-    public readonly string $configFile;
     public readonly string $realmCacheFile;
     public readonly string $auctionHouseDirectory;
     public readonly array $realmBlacklist;
@@ -48,7 +47,6 @@ class Environment
             throw new \RuntimeException('Auction house save directory does not exists');
         }
 
-        $this->configFile = $ini->file;
         $this->realmCacheFile = $ini->getString('database.realms');
         $this->auctionHouseDirectory = $ini->getString('database.auction_houses');
         $this->realmBlacklist = $ini->getIntArray('database.blacklisted_realms');
@@ -62,16 +60,20 @@ class Environment
         $tags = [];
 
         foreach ($ini->getNamespaces() as $namespace) {
+            if (!\str_contains($namespace, '/')) {
+                continue;
+            }
+
             try {
                 $items = \array_merge(
                     $items,
-                    $ini->getIntArray($namespace . '.item'),
+                    $ini->getItemArray($namespace . '.item'),
                 );
 
                 foreach (\explode('/', $namespace) as $nsTag) {
                     $tags[$nsTag] ??= [];
 
-                    \array_push($tags[$nsTag], ...$ini->getIntArray($namespace . '.item'));
+                    \array_push($tags[$nsTag], ...$ini->getItemIdArray($namespace . '.item'));
                 }
             } catch (\Throwable) {
                 continue;
@@ -79,7 +81,7 @@ class Environment
         }
 
         if (\array_key_exists('test', $tags)) {
-            $items = $ini->getIntArray('test.item');
+            $items = $ini->getItemArray('test.item');
         }
 
         return [
@@ -93,5 +95,18 @@ class Environment
         return new static(
             ini: Ini::fromFile($fileName),
         );
+    }
+
+    public function hasItem(\stdClass $item): bool
+    {
+        foreach ($this->itemList as $itemEntry) {
+            if ($item->id === $itemEntry->spellId) {
+                return true;
+            }
+
+            // @todo Support bonusIdentifiers later
+        }
+
+        return false;
     }
 }

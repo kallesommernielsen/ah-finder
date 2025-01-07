@@ -82,7 +82,8 @@ class Report
     public function getHTML(): string
     {
         $html = $this->generateHeader();
-        $html .= '<table class="table-dark">' . \PHP_EOL;
+        $html .= '<table class="table table-borderless table-hover table-dark" style="max-width: 80%;">' . \PHP_EOL;
+        $html .= '<tbody>' . \PHP_EOL;
 
         foreach ($this->items as [$itemId, $price, $connectedRealmId, $tags]) {
             $html .= '<tr>' . \PHP_EOL;
@@ -113,6 +114,7 @@ class Report
             $html .= '</tr>' . \PHP_EOL;
         }
 
+        $html .= '</tbody>' . \PHP_EOL;
         $html .= '</table>' . \PHP_EOL;
 
         return $html . $this->generateFooter();

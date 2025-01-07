@@ -10,7 +10,6 @@ class Ini
      * @param array<mixed> $directives
      */
     final public function __construct(
-        public readonly string $file,
         protected array $directives = [],
     ) {
     }
@@ -18,7 +17,6 @@ class Ini
     public static function fromFile(string $file): static
     {
         return new static(
-            file: $file,
             directives: [
                 ...(\parse_ini_file($file, true, \INI_SCANNER_TYPED) ?: []),
             ],
@@ -107,6 +105,51 @@ class Ini
         }
 
         return $value;
+    }
+
+    public function getItemArray(string $path): array
+    {
+        $value = $this->path($path);
+
+        if (!\is_array($value)) {
+            throw new \UnexpectedValueException('Unexpected value, expecting string-array');
+        }
+
+        $items = [];
+
+        foreach ($value as $v) {
+            if (!\is_string($v) && !\is_int($v)) {
+                throw new \UnexpectedValueException('Unexpected value, expecting string|int-array');
+            }
+
+            if (!\str_contains((string) $v, '/')) {
+                $items[] = new Item(
+                    spellId: (int) $v,
+                );
+
+                continue;
+            }
+
+            [$spellId, $bonusIdentifiers] = \explode('/', (string) $v, 2);
+
+            $items[] = new Item(
+                spellId: (int) $spellId,
+                bonusIdentifiers: \explode('/', $bonusIdentifiers),
+            );
+        }
+
+        return $items;
+    }
+
+    public function getItemIdArray(string $path): array
+    {
+        $items = [];
+
+        foreach ($this->getItemArray($path) as $item) {
+            $items[] = $item->spellId;
+        }
+
+        return $items;
     }
 
     /**

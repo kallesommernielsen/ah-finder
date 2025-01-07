@@ -29,7 +29,7 @@ class ScanCommand extends Command
                 if (
                     !\property_exists($auction, 'item') ||
                     !$auction->item instanceof \stdClass ||
-                    !\in_array($auction->item->id, $this->env->itemList) ||
+                    !$this->env->hasItem($auction->item) ||
                     !\property_exists($auction, 'buyout')
                 ) {
                     continue;

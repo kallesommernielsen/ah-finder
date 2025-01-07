@@ -40,7 +40,7 @@ class CurlBatchManager
 
                 $info = \curl_multi_info_read($mh);
 
-                if ($info !== false && $info['result'] === CURLE_OK) {
+                if ($info !== false && $info['result'] === \CURLE_OK) {
                     $this->startNextAvailableHandle($mh);
                 }
             }
@@ -63,13 +63,14 @@ class CurlBatchManager
         }
     }
 
-    protected function decodeResponse(\CurlHandle $curlHandle): string
+    protected function getResponse(\CurlHandle $curlHandle): string
     {
         $returnValue = \curl_multi_getcontent($curlHandle);
 
         if (!\is_string($returnValue) || !\json_validate($returnValue)) {
             throw new \RuntimeException('Unable to complete request');
         }
+
         return $returnValue;
     }
 
@@ -78,7 +79,7 @@ class CurlBatchManager
         $hash = \spl_object_hash($curlHandle);
         $this->batch[$hash][0] = CurlBatchStatus::COMPLETE;
 
-        ($this->endCallback)($this->batch[$hash][2], $this->decodeResponse($curlHandle));
+        ($this->endCallback)($this->batch[$hash][2], $this->getResponse($curlHandle));
     }
 
     protected function finishDangling(): void
