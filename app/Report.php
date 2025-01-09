@@ -44,6 +44,22 @@ class Report
         ];
     }
 
+    protected function getStatTags(): \Generator
+    {
+        $totalPrice = 0;
+
+        foreach ($this->items as $item) {
+            $totalPrice += $item[1];
+        }
+
+        yield $this->formatCurrencyWithIcons($totalPrice);
+
+        yield \sprintf(
+            '%d items',
+            \sizeof($this->items),
+        );
+    }
+
     protected function generateHeader(): string
     {
         $html = '<!DOCTYPE html>' . \PHP_EOL;
@@ -57,6 +73,17 @@ class Report
         $html .= '</head>' . \PHP_EOL;
         $html .= '<body style="height: 100%;">' . \PHP_EOL;
         $html .= '<h1 class="display-1 text-center">Auction House Dump</h1>' . \PHP_EOL;
+        $html .= '<div class="h-100 d-flex align-items-center justify-content-center">' . \PHP_EOL;
+
+        foreach ($this->getStatTags() as $stat) {
+            $html .= \sprintf(
+                '<span class="badge rounded-pill text-bg-light me-1">%s</span>%s',
+                $stat,
+                \PHP_EOL,
+            );
+        }
+
+        $html .= '</div>' . \PHP_EOL;
         $html .= '<div class="h-100 d-flex align-items-center justify-content-center">' . \PHP_EOL;
 
         return $html;
