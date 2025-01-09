@@ -6,6 +6,7 @@ namespace App\Commands;
 
 use App\Command;
 use App\CommandName;
+use App\Config\Item;
 use App\Report;
 
 #[CommandName('scan')]
@@ -59,14 +60,29 @@ class ScanCommand extends Command
             realmMap: $this->getRealmMap(),
         );
 
+        $totalPrice = 0;
+
         foreach ($cheapestList as [$item, $price, $connectedRealmId]) {
+            $totalPrice += $price;
+
             $report->addItem(
                 item: $item,
                 price: $price,
                 connectedRealmId: $connectedRealmId,
-                tags: $this->getItemTags($item->itemId),
+                tags: $this->getItemTags($item),
             );
         }
+
+        $this->write(
+            \sprintf(
+                'Total price: %s for %d item%s',
+                $this->formatCurrency($totalPrice),
+                \sizeof($this->env->itemList),
+                \sizeof($this->env->itemList) > 1
+                    ? 's'
+                    : '',
+            ),
+        );
 
         \file_put_contents(\getcwd() . '/report.html', $report->getHTML());
     }
@@ -102,16 +118,36 @@ class ScanCommand extends Command
         }
     }
 
-    protected function getItemTags(int $itemId): array
+    protected function getItemTags(Item $item): array
     {
         $tags = [];
 
         foreach (\array_keys($this->env->itemListTags) as $tag) {
-            if (\in_array($itemId, $this->env->itemListTags[$tag])) {
-                $tags[] = $tag;
+            $bonusId = null;
+            $tagName = $tag;
+
+            if (\str_contains($tag, ':')) {
+                [$tagName, $bonusId] = \explode(':', $tag, 2);
+                $bonusId = (int) $bonusId;
+            }
+
+            if (
+                \in_array($item->itemId, $this->env->itemListTags[$tag]) &&
+                $item->bonusId === $bonusId
+            ) {
+                $tags[] = $tagName;
             }
         }
 
         return $tags;
+    }
+
+    protected function formatCurrency(int $amount): string
+    {
+        return \sprintf(
+            '%dg %ds',
+            \substr((string) $amount, 0, -4),
+            \substr((string) $amount, -4, 2),
+        );
     }
 }

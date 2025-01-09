@@ -73,19 +73,32 @@ class Report
 
     protected function getWowheadInfo(Item $item): array
     {
+        $bonusIds = [];
+
+        if ($item->bonusId !== null) {
+            $bonusIds[] = $item->bonusId;
+        }
+
+        if (\sizeof($item->visualBonusIds) > 0) {
+            $bonusIds = \array_merge(
+                $bonusIds,
+                $item->visualBonusIds,
+            );
+        }
+
         return [
             \sprintf(
                 'https://www.wowhead.com/item=%d',
                 $item->itemId,
             ),
             \sprintf(
-                '%s=%d',
-                $item->bonusId !== null
+                '%s=%s',
+                \sizeof($bonusIds) > 0
                     ? 'bonus'
                     : 'item',
-                $item->bonusId !== null
-                    ? $item->bonusId
-                    : $item->itemId,
+                \sizeof($bonusIds) > 0
+                        ? \join(':', $bonusIds)
+                        : $item->itemId,
             ),
             $item->itemId,
         ];

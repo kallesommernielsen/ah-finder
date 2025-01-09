@@ -57,6 +57,17 @@ class Ini
         return $index;
     }
 
+    public function getScalar(string $path): int|string
+    {
+        $value = $this->path($path);
+
+        if (!\is_string($value) && !\is_int($value)) {
+            throw new \UnexpectedValueException('Unexpected value, expecting int|string');
+        }
+
+        return $value;
+    }
+
     public function getNamespaces(): array
     {
         return \array_keys($this->directives);
@@ -138,18 +149,23 @@ class Ini
                 bonusId: $this->has($path . '.bonusId')
                     ? $this->getInt($path . '.bonusId')
                     : null,
+                visualBonusIds: $this->has($path . '.visualBonusIds')
+                    ? \array_map(\intval(...), \explode(':', (string) $this->getScalar($path . '.visualBonusIds')))
+                    : [],
             );
         }
 
         return $items;
     }
 
-    public function getItemIdArray(string $path): array
+    public function getItemIdArray(string $path, ?int $bonusId): array
     {
         $items = [];
 
         foreach ($this->getItemArray($path) as $item) {
-            $items[] = $item->itemId;
+            if ($bonusId === $item->bonusId) {
+                $items[] = $item->itemId;
+            }
         }
 
         return $items;

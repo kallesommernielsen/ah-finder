@@ -16,7 +16,6 @@ class Environment
     public readonly array $realmBlacklist;
     public readonly array $realmCategoryBlacklist;
     public readonly array $itemList;
-    public readonly array $itemsMap;
     public readonly array $itemListTags;
 
     protected array $cachedItemLookups = [];
@@ -54,7 +53,7 @@ class Environment
         $this->auctionHouseDirectory = $ini->getString('database.auction_houses');
         $this->realmBlacklist = $ini->getIntArray('database.blacklisted_realms');
         $this->realmCategoryBlacklist = $ini->getStringArray('database.blacklisted_categories');
-        [$this->itemList, $this->itemsMap, $this->itemListTags] = $this->getItemList($ini);
+        [$this->itemList, $this->itemListTags] = $this->getItemList($ini);
     }
 
     protected function getItemList(Ini $ini): array
@@ -73,20 +72,21 @@ class Environment
             );
 
             foreach (\explode('/', $namespace) as $nsTag) {
+                $bonusId = null;
+
+                if ($ini->has($namespace . '.bonusId')) {
+                    $bonusId = $ini->getInt($namespace . '.bonusId');
+                    $nsTag .= ':' . (string) $bonusId;
+                }
+
                 $tags[$nsTag] ??= [];
 
-                \array_push($tags[$nsTag], ...$ini->getItemIdArray($namespace));
+                \array_push($tags[$nsTag], ...$ini->getItemIdArray($namespace, $bonusId));
             }
         }
 
         return [
             $items,
-            \array_flip(
-                \array_map(
-                    static fn(Item $item): int => $item->itemId,
-                    $items,
-                ),
-            ),
             $tags,
         ];
     }
@@ -109,13 +109,17 @@ class Environment
                     }
 
                     foreach ($item->bonus_lists as $bonusId) {
-                        if ($bonusId !== $itemEntry->bonusId) {
-                            continue 2;
+                        if ($bonusId === $itemEntry->bonusId) {
+                            goto found;
                         }
                     }
+
+                    continue;
                 }
 
-                $this->cachedItemLookups[\spl_object_hash($item)] = $index;
+                found: {
+                    $this->cachedItemLookups[\spl_object_hash($item)] = $index;
+                }
 
                 return true;
             }
