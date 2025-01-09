@@ -15,9 +15,11 @@ class Environment
     public readonly string $auctionHouseDirectory;
     public readonly array $realmBlacklist;
     public readonly array $realmCategoryBlacklist;
-    public readonly array $itemNamespaceRootBlacklist;
     public readonly array $itemList;
+    public readonly array $itemsMap;
     public readonly array $itemListTags;
+
+    protected array $cachedItemLookups = [];
 
     /**
      * @param array<mixed> $ini
@@ -52,8 +54,7 @@ class Environment
         $this->auctionHouseDirectory = $ini->getString('database.auction_houses');
         $this->realmBlacklist = $ini->getIntArray('database.blacklisted_realms');
         $this->realmCategoryBlacklist = $ini->getStringArray('database.blacklisted_categories');
-        $this->itemNamespaceRootBlacklist = $ini->getStringArray('database.blacklisted_namespace_roots');
-        [$this->itemList, $this->itemListTags] = $this->getItemList($ini);
+        [$this->itemList, $this->itemsMap, $this->itemListTags] = $this->getItemList($ini);
     }
 
     protected function getItemList(Ini $ini): array
@@ -66,34 +67,26 @@ class Environment
                 continue;
             }
 
-            $namespaceParts = \explode('/', $namespace);
+            $items = \array_merge(
+                $items,
+                $ini->getItemArray($namespace),
+            );
 
-            if (\in_array($namespaceParts[0], $this->itemNamespaceRootBlacklist)) {
-                continue;
+            foreach (\explode('/', $namespace) as $nsTag) {
+                $tags[$nsTag] ??= [];
+
+                \array_push($tags[$nsTag], ...$ini->getItemIdArray($namespace));
             }
-
-            try {
-                $items = \array_merge(
-                    $items,
-                    $ini->getItemArray($namespace . '.item'),
-                );
-
-                foreach ($namespaceParts as $nsTag) {
-                    $tags[$nsTag] ??= [];
-
-                    \array_push($tags[$nsTag], ...$ini->getItemIdArray($namespace . '.item'));
-                }
-            } catch (\Throwable) {
-                continue;
-            }
-        }
-
-        if (\array_key_exists('test', $tags)) {
-            $items = $ini->getItemArray('test.item');
         }
 
         return [
             $items,
+            \array_flip(
+                \array_map(
+                    static fn(Item $item): int => $item->itemId,
+                    $items,
+                ),
+            ),
             $tags,
         ];
     }
@@ -107,14 +100,38 @@ class Environment
 
     public function hasItem(\stdClass $item): bool
     {
-        foreach ($this->itemList as $itemEntry) {
-            if ($item->id === $itemEntry->spellId) {
+        foreach ($this->itemList as $index => $itemEntry) {
+            if ($item->id === $itemEntry->itemId) {
+
+                if ($itemEntry->bonusId !== null) {
+                    if (!\property_exists($item, 'bonus_lists') || !\is_array($item->bonus_lists)) {
+                        continue;
+                    }
+
+                    foreach ($item->bonus_lists as $bonusId) {
+                        if ($bonusId !== $itemEntry->bonusId) {
+                            continue 2;
+                        }
+                    }
+                }
+
+                $this->cachedItemLookups[\spl_object_hash($item)] = $index;
+
                 return true;
             }
-
-            // @todo Support bonusIdentifiers later
         }
 
         return false;
+    }
+
+    public function getItem(\stdClass $item): Item
+    {
+        $hash = \spl_object_hash($item);
+
+        if (!\array_key_exists($hash, $this->cachedItemLookups)) {
+            throw new \InvalidArgumentException('Cannot fetch item that was not cached prior');
+        }
+
+        return $this->itemList[$this->cachedItemLookups[$hash]];
     }
 }

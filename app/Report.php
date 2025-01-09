@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Config\Item;
+
 class Report
 {
     protected array $items = [];
@@ -29,13 +31,13 @@ class Report
     }
 
     public function addItem(
-        int $itemId,
+        Item $item,
         int $price,
         int $connectedRealmId,
         array $tags,
     ): void {
         $this->items[] = [
-            $itemId,
+            $item,
             $price,
             $connectedRealmId,
             $tags,
@@ -47,7 +49,7 @@ class Report
         $html = '<!DOCTYPE html>' . \PHP_EOL;
         $html .= '<html lang="en" data-bs-theme="dark">' . \PHP_EOL;
         $html .= '<head>' . \PHP_EOL;
-        $html .= '<title>Auction House Price Report</title>' . \PHP_EOL;
+        $html .= '<title>Auction House Dump</title>' . \PHP_EOL;
         $html .= '<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">' . \PHP_EOL;
         $html .= '<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>' . \PHP_EOL;
         $html .= '<script>const whTooltips = {colorLinks: true, iconizeLinks: true, renameLinks: true};</script>' . \PHP_EOL;
@@ -69,12 +71,24 @@ class Report
         return $html;
     }
 
-    protected function getLink(int $itemId): string
+    protected function getWowheadInfo(Item $item): array
     {
-        return \sprintf(
-            'https://www.wowhead.com/item=%d',
-            $itemId,
-        );
+        return [
+            \sprintf(
+                'https://www.wowhead.com/item=%d',
+                $item->itemId,
+            ),
+            \sprintf(
+                '%s=%d',
+                $item->bonusId !== null
+                    ? 'bonus'
+                    : 'item',
+                $item->bonusId !== null
+                    ? $item->bonusId
+                    : $item->itemId,
+            ),
+            $item->itemId,
+        ];
     }
 
     public function getHTML(): string
@@ -83,13 +97,12 @@ class Report
         $html .= '<table class="table table-borderless table-hover table-dark" style="max-width: 80%;">' . \PHP_EOL;
         $html .= '<tbody>' . \PHP_EOL;
 
-        foreach ($this->items as [$itemId, $price, $connectedRealmId, $tags]) {
+        foreach ($this->items as [$item, $price, $connectedRealmId, $tags]) {
             $html .= '<tr>' . \PHP_EOL;
             $html .= '<td class="p-1">' . \PHP_EOL;
             $html .= \sprintf(
-                '<a href="%1$s" target="_blank" data-wowhead="item=%2$d">(item #%2$d)</a>',
-                $this->getLink($itemId),
-                $itemId,
+                '<a href="%s" target="_blank" data-wowhead="%s">(item #%d)</a>',
+                ...$this->getWowheadInfo($item),
             );
 
             $html .= '</td>' . \PHP_EOL;

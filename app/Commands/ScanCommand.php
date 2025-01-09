@@ -35,32 +35,36 @@ class ScanCommand extends Command
                     continue;
                 }
 
+                $item = $this->env->getItem($auction->item);
+                $itemHash = \spl_object_hash($item);
+
                 if (
-                    \array_key_exists($auction->item->id, $cheapestList) &&
-                    $auction->buyout > $cheapestList[$auction->item->id][0]
+                    \array_key_exists($itemHash, $cheapestList) &&
+                    $auction->buyout > $cheapestList[$itemHash][1]
                 ) {
                     continue;
                 }
 
-                $cheapestList[$auction->item->id] = [
+                $cheapestList[$itemHash] = [
+                    $item,
                     $auction->buyout,
                     $auctionHouseId,
                 ];
             }
         }
 
-        \uasort($cheapestList, static fn(array $a, array $b): int => $a[0] <=> $b[0]);
+        \uasort($cheapestList, static fn(array $a, array $b): int => $a[1] <=> $b[1]);
 
         $report = new Report(
             realmMap: $this->getRealmMap(),
         );
 
-        foreach ($cheapestList as $itemId => [$price, $connectedRealmId]) {
+        foreach ($cheapestList as [$item, $price, $connectedRealmId]) {
             $report->addItem(
-                itemId: $itemId,
+                item: $item,
                 price: $price,
                 connectedRealmId: $connectedRealmId,
-                tags: $this->getItemTags($itemId),
+                tags: $this->getItemTags($item->itemId),
             );
         }
 

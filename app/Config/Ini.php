@@ -23,6 +23,17 @@ class Ini
         );
     }
 
+    public function has(string $path): bool
+    {
+        try {
+            $this->path($path);
+        } catch (\InvalidArgumentException) {
+            return false;
+        }
+
+        return true;
+    }
+
     public function path(string $path): mixed
     {
         $index = $this->directives;
@@ -109,7 +120,7 @@ class Ini
 
     public function getItemArray(string $path): array
     {
-        $value = $this->path($path);
+        $value = $this->path($path  . '.item');
 
         if (!\is_array($value)) {
             throw new \UnexpectedValueException('Unexpected value, expecting string-array');
@@ -122,19 +133,11 @@ class Ini
                 throw new \UnexpectedValueException('Unexpected value, expecting string|int-array');
             }
 
-            if (!\str_contains((string) $v, '/')) {
-                $items[] = new Item(
-                    spellId: (int) $v,
-                );
-
-                continue;
-            }
-
-            [$spellId, $bonusIdentifiers] = \explode('/', (string) $v, 2);
-
             $items[] = new Item(
-                spellId: (int) $spellId,
-                bonusIdentifiers: \explode('/', $bonusIdentifiers),
+                itemId: (int) $v,
+                bonusId: $this->has($path . '.bonusId')
+                    ? $this->getInt($path . '.bonusId')
+                    : null,
             );
         }
 
@@ -146,7 +149,7 @@ class Ini
         $items = [];
 
         foreach ($this->getItemArray($path) as $item) {
-            $items[] = $item->spellId;
+            $items[] = $item->itemId;
         }
 
         return $items;

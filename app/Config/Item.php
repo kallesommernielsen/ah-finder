@@ -7,8 +7,8 @@ namespace App\Config;
 readonly class Item
 {
     public function __construct(
-        public int $spellId,
-        public array $bonusIdentifiers = [],
+        public int $itemId,
+        public ?int $bonusId = null,
     ) {
     }
 }
