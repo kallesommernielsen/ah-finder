@@ -144,11 +144,24 @@ class Ini
                 throw new \UnexpectedValueException('Unexpected value, expecting string|int-array');
             }
 
+            $bonusIds = [];
+
+            if (\str_contains((string) $v, ':')) {
+                [$v, $bonusIds] = \explode(':', (string) $v);
+                $bonusIds = \array_map(\intval(...), \explode(':', $bonusIds));
+            }
+
             $items[] = new Item(
                 itemId: (int) $v,
                 bonusIds: $this->has($path . '.bonusIds')
-                    ? \array_map(\intval(...), \explode(':', (string) $this->getScalar($path . '.bonusIds')))
-                    : [],
+                    ? \array_merge(
+                        $bonusIds,
+                        \array_map(
+                            \intval(...),
+                            \explode(':', (string) $this->getScalar($path . '.bonusIds')),
+                        ),
+                    )
+                    : $bonusIds,
             );
         }
 
