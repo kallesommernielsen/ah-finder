@@ -131,10 +131,11 @@ class ScanCommand extends Command
                 $bonusId = (int) $bonusId;
             }
 
-            if (
-                \in_array($item->itemId, $this->env->itemListTags[$tag]) &&
-                $item->bonusId === $bonusId
-            ) {
+            if (\in_array($item->itemId, $this->env->itemListTags[$tag])) {
+                if ($bonusId !== null && !\in_array($bonusId, $item->bonusIds)) {
+                    continue;
+                }
+
                 $tags[] = $tagName;
             }
         }

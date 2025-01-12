@@ -8,8 +8,7 @@ readonly class Item
 {
     public function __construct(
         public int $itemId,
-        public ?int $bonusId = null,
-        public array $visualBonusIds = [],
+        public array $bonusIds,
     ) {
     }
 }

@@ -74,9 +74,12 @@ class Environment
             foreach (\explode('/', $namespace) as $nsTag) {
                 $bonusId = null;
 
-                if ($ini->has($namespace . '.bonusId')) {
-                    $bonusId = $ini->getInt($namespace . '.bonusId');
-                    $nsTag .= ':' . (string) $bonusId;
+                if ($ini->has($namespace . '.bonusIds')) {
+                    $bonusId = \array_map(\intval(...), \explode(':', (string) $ini->path($namespace . '.bonusIds')))[0] ?? null;
+
+                    if ($bonusId !== null) {
+                        $nsTag .= ':' . (string) $bonusId;
+                    }
                 }
 
                 $tags[$nsTag] ??= [];
@@ -103,13 +106,13 @@ class Environment
         foreach ($this->itemList as $index => $itemEntry) {
             if ($item->id === $itemEntry->itemId) {
 
-                if ($itemEntry->bonusId !== null) {
+                if ($itemEntry->bonusIds) {
                     if (!\property_exists($item, 'bonus_lists') || !\is_array($item->bonus_lists)) {
                         continue;
                     }
 
                     foreach ($item->bonus_lists as $bonusId) {
-                        if ($bonusId === $itemEntry->bonusId) {
+                        if (\in_array($bonusId, $itemEntry->bonusIds)) {
                             goto found;
                         }
                     }

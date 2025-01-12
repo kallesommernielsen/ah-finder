@@ -100,18 +100,7 @@ class Report
 
     protected function getWowheadInfo(Item $item): array
     {
-        $bonusIds = [];
-
-        if ($item->bonusId !== null) {
-            $bonusIds[] = $item->bonusId;
-        }
-
-        if (\sizeof($item->visualBonusIds) > 0) {
-            $bonusIds = \array_merge(
-                $bonusIds,
-                $item->visualBonusIds,
-            );
-        }
+        $bonusIds = $item->bonusIds;
 
         return [
             \sprintf(

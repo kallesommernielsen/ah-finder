@@ -146,11 +146,8 @@ class Ini
 
             $items[] = new Item(
                 itemId: (int) $v,
-                bonusId: $this->has($path . '.bonusId')
-                    ? $this->getInt($path . '.bonusId')
-                    : null,
-                visualBonusIds: $this->has($path . '.visualBonusIds')
-                    ? \array_map(\intval(...), \explode(':', (string) $this->getScalar($path . '.visualBonusIds')))
+                bonusIds: $this->has($path . '.bonusIds')
+                    ? \array_map(\intval(...), \explode(':', (string) $this->getScalar($path . '.bonusIds')))
                     : [],
             );
         }
@@ -163,9 +160,11 @@ class Ini
         $items = [];
 
         foreach ($this->getItemArray($path) as $item) {
-            if ($bonusId === $item->bonusId) {
-                $items[] = $item->itemId;
+            if ($bonusId !== null && !\in_array($bonusId, $item->bonusIds)) {
+                continue;
             }
+
+            $items[] = $item->itemId;
         }
 
         return $items;
