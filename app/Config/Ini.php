@@ -154,15 +154,33 @@ class Ini
             $items[] = new Item(
                 itemId: (int) $v,
                 bonusIds: $this->has($path . '.bonusIds')
-                    ? \array_merge(
-                        $bonusIds,
-                        \array_map(
-                            \intval(...),
-                            \explode(':', (string) $this->getScalar($path . '.bonusIds')),
+                    ? \array_unique(
+                        \array_merge(
+                            $bonusIds,
+                            \array_map(
+                                \intval(...),
+                                \explode(':', (string) $this->getScalar($path . '.bonusIds')),
+                            ),
                         ),
                     )
                     : $bonusIds,
             );
+        }
+
+        if ($this->has($path . '.pet')) {
+            $value = $this->path($path . '.pet');
+
+            if (\is_array($value)) {
+                foreach ($value as $v) {
+                    if (!\is_string($v) && !\is_int($v)) {
+                        throw new \UnexpectedValueException('Unexpected value, expecting string|int-array');
+                    }
+
+                    $items[] = new Pet(
+                        speciesId: (int) $v,
+                    );
+                }
+            }
         }
 
         return $items;
@@ -173,6 +191,10 @@ class Ini
         $items = [];
 
         foreach ($this->getItemArray($path) as $item) {
+            if (!$item instanceof Item) {
+                continue;
+            }
+
             if ($bonusId !== null && !\in_array($bonusId, $item->bonusIds)) {
                 continue;
             }

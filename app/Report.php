@@ -12,6 +12,7 @@ class Report
 
     public function __construct(
         protected readonly array $realmMap,
+        protected readonly array $notFoundItems = [],
     ) {
     }
 
@@ -30,6 +31,7 @@ class Report
         return \join(', ', $this->realmMap[$connectedRealmId]);
     }
 
+    // @todo Support pets here
     public function addItem(
         Item $item,
         int $price,
@@ -58,6 +60,14 @@ class Report
             '%d items',
             \sizeof($this->items),
         );
+
+        yield \sprintf(
+            '%d item%s not found',
+            \sizeof($this->notFoundItems),
+            \sizeof($this->notFoundItems) > 1
+                ? 's'
+                : '',
+        );
     }
 
     protected function generateHeader(): string
@@ -84,20 +94,19 @@ class Report
         }
 
         $html .= '</div>' . \PHP_EOL;
-        $html .= '<div class="h-100 d-flex align-items-center justify-content-center">' . \PHP_EOL;
 
         return $html;
     }
 
     protected function generateFooter(): string
     {
-        $html = '</div>' . \PHP_EOL;
-        $html .= '</body>' . \PHP_EOL;
+        $html = '</body>' . \PHP_EOL;
         $html .= '</html>';
 
         return $html;
     }
 
+    // @todo Support pets here
     protected function getWowheadInfo(Item $item): array
     {
         $bonusIds = $item->bonusIds;
@@ -123,12 +132,14 @@ class Report
     public function getHTML(): string
     {
         $html = $this->generateHeader();
+        $html .= '<div class="h-100 d-flex align-items-center justify-content-center">' . \PHP_EOL;
         $html .= '<table class="table table-borderless table-hover table-dark" style="max-width: 80%;">' . \PHP_EOL;
         $html .= '<tbody>' . \PHP_EOL;
 
         foreach ($this->items as [$item, $price, $connectedRealmId, $tags]) {
             $html .= '<tr>' . \PHP_EOL;
             $html .= '<td class="p-1">' . \PHP_EOL;
+
             $html .= \sprintf(
                 '<a href="%s" target="_blank" data-wowhead="%s">(item #%d)</a>',
                 ...$this->getWowheadInfo($item),
@@ -156,6 +167,30 @@ class Report
 
         $html .= '</tbody>' . \PHP_EOL;
         $html .= '</table>' . \PHP_EOL;
+        $html .= '</div>' . \PHP_EOL;
+        $html .= '<div class="h-100 d-flex align-items-center justify-content-center">' . \PHP_EOL;
+        $html .= '<h2>Not found items</h2>' . \PHP_EOL;
+        $html .= '</div>' . \PHP_EOL;
+        $html .= '<div class="h-100 d-flex align-items-center justify-content-center">' . \PHP_EOL;
+        $html .= '<table class="table table-borderless table-hover table-dark" style="max-width: 80%;">' . \PHP_EOL;
+        $html .= '<tbody>' . \PHP_EOL;
+
+        foreach ($this->notFoundItems as $item) {
+            $html .= '<tr>' . \PHP_EOL;
+            $html .= '<td class="p-1">' . \PHP_EOL;
+
+            $html .= \sprintf(
+                '<a href="%s" target="_blank" data-wowhead="%s">(item #%d)</a>',
+                ...$this->getWowheadInfo($item),
+            );
+
+            $html .= '</td>' . \PHP_EOL;
+            $html .= '</tr>' . \PHP_EOL;
+        }
+
+        $html .= '</tbody>' . \PHP_EOL;
+        $html .= '</table>' . \PHP_EOL;
+        $html .= '</div>' . \PHP_EOL;
 
         return $html . $this->generateFooter();
     }

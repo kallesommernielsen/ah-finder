@@ -56,8 +56,11 @@ class ScanCommand extends Command
 
         \uasort($cheapestList, static fn(array $a, array $b): int => $a[1] <=> $b[1]);
 
+        $notFoundItems = $this->env->getNotCachedItems();
+
         $report = new Report(
             realmMap: $this->getRealmMap(),
+            notFoundItems: $notFoundItems,
         );
 
         $totalPrice = 0;
@@ -75,9 +78,13 @@ class ScanCommand extends Command
 
         $this->write(
             \sprintf(
-                'Total price: %s for %d item%s',
+                'Total price: %s for %d item%s (%d item%s not found)',
                 $this->formatCurrency($totalPrice),
                 \sizeof($this->env->itemList),
+                \sizeof($this->env->itemList) > 1
+                    ? 's'
+                    : '',
+                \sizeof($notFoundItems),
                 \sizeof($this->env->itemList) > 1
                     ? 's'
                     : '',
@@ -118,6 +125,7 @@ class ScanCommand extends Command
         }
     }
 
+    // @todo Support pets here
     protected function getItemTags(Item $item): array
     {
         $tags = [];

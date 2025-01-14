@@ -105,8 +105,7 @@ class Environment
     {
         foreach ($this->itemList as $index => $itemEntry) {
             if ($item->id === $itemEntry->itemId) {
-
-                if ($itemEntry->bonusIds) {
+                if ($itemEntry instanceof Item && $itemEntry->bonusIds) {
                     if (!\property_exists($item, 'bonus_lists') || !\is_array($item->bonus_lists)) {
                         continue;
                     }
@@ -119,6 +118,8 @@ class Environment
 
                     continue;
                 }
+
+                // @todo Support Pets here
 
                 found: {
                     $this->cachedItemLookups[\spl_object_hash($item)] = $index;
@@ -140,5 +141,18 @@ class Environment
         }
 
         return $this->itemList[$this->cachedItemLookups[$hash]];
+    }
+
+    public function getNotCachedItems(): array
+    {
+        $items = [];
+
+        foreach (\array_keys($this->itemList) as $index) {
+            if (!\in_array($index, $this->cachedItemLookups)) {
+                $items[] = $this->itemList[$index];
+            }
+        }
+
+        return $items;
     }
 }

@@ -39,7 +39,9 @@ class Dispatcher
                     $class->getParentClass() === false ||
                     $class->getParentClass()->getName() !== Command::class ||
                     $class->isAbstract() ||
-                    $class->isInterface()
+                    $class->isInterface() ||
+                    $class->isTrait() ||
+                    $class->isEnum()
                 ) {
                     continue;
                 }
