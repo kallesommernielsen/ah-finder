@@ -165,24 +165,26 @@ class Report
             $html .= '</tr>' . \PHP_EOL;
         }
 
-        $html .= '</tbody>' . \PHP_EOL;
-        $html .= '</table>' . \PHP_EOL;
-        $html .= '</div>' . \PHP_EOL;
-        $html .= '<div class="h-100 d-flex align-items-center justify-content-center">' . \PHP_EOL;
-        $html .= '<h2>Not found items</h2>' . \PHP_EOL;
-        $html .= '</div>' . \PHP_EOL;
-        $html .= '<div class="h-100 d-flex align-items-center justify-content-center">' . \PHP_EOL;
-        $html .= '<table class="table table-borderless table-hover table-dark" style="max-width: 80%;">' . \PHP_EOL;
-        $html .= '<tbody>' . \PHP_EOL;
-
-        foreach ($this->notFoundItems as $item) {
+        foreach ($this->notFoundItems as [$item, $tags]) {
             $html .= '<tr>' . \PHP_EOL;
-            $html .= '<td class="p-1">' . \PHP_EOL;
+            $html .= '<td class="p-1" colspan="3">' . \PHP_EOL;
 
             $html .= \sprintf(
                 '<a href="%s" target="_blank" data-wowhead="%s">(item #%d)</a>',
                 ...$this->getWowheadInfo($item),
             );
+
+            $html .= '</td>' . \PHP_EOL;
+            $html .= '<td class="p-1">' . \PHP_EOL;
+            $html .= '<span class="badge rounded-pill text-bg-warning">Unavailable</span>' . \PHP_EOL;
+
+
+            foreach ($tags as $tag) {
+                $html .= \sprintf(
+                    ' <span class="badge rounded-pill text-bg-primary">%s</span>',
+                    $tag,
+                );
+            }
 
             $html .= '</td>' . \PHP_EOL;
             $html .= '</tr>' . \PHP_EOL;

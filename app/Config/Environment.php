@@ -101,6 +101,18 @@ class Environment
         );
     }
 
+    // @todo Support Pets here
+    public function getItemHash(Item $item): string
+    {
+        $hash = (string) $item->itemId;
+
+        if (\sizeof($item->bonusIds) > 0) {
+            $hash .= ':' . \join(':', $item->bonusIds);
+        }
+
+        return $hash;
+    }
+
     public function hasItem(\stdClass $item): bool
     {
         foreach ($this->itemList as $index => $itemEntry) {
@@ -149,10 +161,12 @@ class Environment
 
         foreach (\array_keys($this->itemList) as $index) {
             if (!\in_array($index, $this->cachedItemLookups)) {
-                $items[] = $this->itemList[$index];
+                $items[$this->getItemHash($this->itemList[$index])] = $this->itemList[$index];
             }
         }
 
-        return $items;
+        \ksort($items);
+
+        return \array_values($items);
     }
 }

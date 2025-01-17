@@ -60,7 +60,11 @@ class ScanCommand extends Command
 
         $report = new Report(
             realmMap: $this->getRealmMap(),
-            notFoundItems: $notFoundItems,
+            // @todo Support Pets here
+            notFoundItems: \array_map(
+                fn(Item $item): array => [$item, $this->getItemTags($item)],
+                $notFoundItems,
+            ),
         );
 
         $totalPrice = 0;
