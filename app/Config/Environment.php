@@ -56,6 +56,7 @@ class Environment
         [$this->itemList, $this->itemListTags] = $this->getItemList($ini);
     }
 
+    // @todo Support Pets here
     protected function getItemList(Ini $ini): array
     {
         $items = [];
@@ -88,8 +89,18 @@ class Environment
             }
         }
 
+        $hashes = [];
+
+        foreach ($items as $index => $item) {
+            $hashes[$index] = $this->getItemHash($item);
+        }
+
+        foreach (\array_diff(\array_keys($hashes), \array_keys(\array_unique($hashes))) as $index) {
+            unset($items[$index]);
+        }
+
         return [
-            $items,
+            \array_values($items),
             $tags,
         ];
     }
