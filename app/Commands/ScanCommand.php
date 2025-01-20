@@ -54,17 +54,16 @@ class ScanCommand extends Command
             }
         }
 
-        \uasort($cheapestList, static fn(array $a, array $b): int => $a[1] <=> $b[1]);
+        \uasort(
+            $cheapestList,
+            static fn(array $a, array $b): int => $a[1] <=> $b[1],
+        );
 
         $notFoundItems = $this->env->getNotCachedItems();
 
         $report = new Report(
             realmMap: $this->getRealmMap(),
-            // @todo Support Pets here
-            notFoundItems: \array_map(
-                fn(Item $item): array => [$item, $this->getItemTags($item)],
-                $notFoundItems,
-            ),
+            notFoundItems: $notFoundItems,
         );
 
         $totalPrice = 0;
@@ -76,7 +75,6 @@ class ScanCommand extends Command
                 item: $item,
                 price: $price,
                 connectedRealmId: $connectedRealmId,
-                tags: $this->getItemTags($item),
             );
         }
 
@@ -127,32 +125,6 @@ class ScanCommand extends Command
 
             yield $auctionHouse;
         }
-    }
-
-    // @todo Support pets here
-    protected function getItemTags(Item $item): array
-    {
-        $tags = [];
-
-        foreach (\array_keys($this->env->itemListTags) as $tag) {
-            $bonusId = null;
-            $tagName = $tag;
-
-            if (\str_contains($tag, ':')) {
-                [$tagName, $bonusId] = \explode(':', $tag, 2);
-                $bonusId = (int) $bonusId;
-            }
-
-            if (\in_array($item->itemId, $this->env->itemListTags[$tag])) {
-                if ($bonusId !== null && !\in_array($bonusId, $item->bonusIds)) {
-                    continue;
-                }
-
-                $tags[] = $tagName;
-            }
-        }
-
-        return $tags;
     }
 
     protected function formatCurrency(int $amount): string

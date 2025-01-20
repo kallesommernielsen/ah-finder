@@ -36,13 +36,11 @@ class Report
         Item $item,
         int $price,
         int $connectedRealmId,
-        array $tags,
     ): void {
         $this->items[] = [
             $item,
             $price,
             $connectedRealmId,
-            $tags,
         ];
     }
 
@@ -136,7 +134,7 @@ class Report
         $html .= '<table class="table table-borderless table-hover table-dark" style="max-width: 80%;">' . \PHP_EOL;
         $html .= '<tbody>' . \PHP_EOL;
 
-        foreach ($this->items as [$item, $price, $connectedRealmId, $tags]) {
+        foreach ($this->items as [$item, $price, $connectedRealmId]) {
             $html .= '<tr>' . \PHP_EOL;
             $html .= '<td class="p-1">' . \PHP_EOL;
 
@@ -154,7 +152,7 @@ class Report
             $html .= '</td>' . \PHP_EOL;
             $html .= '<td class="p-1">' . \PHP_EOL;
 
-            foreach ($tags as $tag) {
+            foreach ($item->tags as $tag) {
                 $html .= \sprintf(
                     ' <span class="badge rounded-pill text-bg-primary">%s</span>',
                     $tag,
@@ -165,7 +163,7 @@ class Report
             $html .= '</tr>' . \PHP_EOL;
         }
 
-        foreach ($this->notFoundItems as [$item, $tags]) {
+        foreach ($this->notFoundItems as $item) {
             $html .= '<tr>' . \PHP_EOL;
             $html .= '<td class="p-1" colspan="3">' . \PHP_EOL;
 
@@ -179,7 +177,7 @@ class Report
             $html .= '<span class="badge rounded-pill text-bg-warning">Unavailable</span>' . \PHP_EOL;
 
 
-            foreach ($tags as $tag) {
+            foreach ($item->tags as $tag) {
                 $html .= \sprintf(
                     ' <span class="badge rounded-pill text-bg-primary">%s</span>',
                     $tag,

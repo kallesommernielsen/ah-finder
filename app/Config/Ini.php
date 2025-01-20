@@ -138,6 +138,7 @@ class Ini
         }
 
         $items = [];
+        $tags = \explode('/', $path);
 
         foreach ($value as $v) {
             if (!\is_string($v) && !\is_int($v)) {
@@ -164,6 +165,7 @@ class Ini
                         ),
                     )
                     : $bonusIds,
+                tags: $tags,
             );
         }
 

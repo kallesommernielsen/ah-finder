@@ -16,7 +16,6 @@ class Environment
     public readonly array $realmBlacklist;
     public readonly array $realmCategoryBlacklist;
     public readonly array $itemList;
-    public readonly array $itemListTags;
 
     protected array $cachedItemLookups = [];
 
@@ -53,14 +52,13 @@ class Environment
         $this->auctionHouseDirectory = $ini->getString('database.auction_houses');
         $this->realmBlacklist = $ini->getIntArray('database.blacklisted_realms');
         $this->realmCategoryBlacklist = $ini->getStringArray('database.blacklisted_categories');
-        [$this->itemList, $this->itemListTags] = $this->getItemList($ini);
+        $this->itemList = $this->getItemList($ini);
     }
 
     // @todo Support Pets here
     protected function getItemList(Ini $ini): array
     {
         $items = [];
-        $tags = [];
 
         foreach ($ini->getNamespaces() as $namespace) {
             if (!\str_contains($namespace, '/')) {
@@ -71,38 +69,19 @@ class Environment
                 $items,
                 $ini->getItemArray($namespace),
             );
-
-            foreach (\explode('/', $namespace) as $nsTag) {
-                $bonusId = null;
-
-                if ($ini->has($namespace . '.bonusIds')) {
-                    $bonusId = \array_map(\intval(...), \explode(':', (string) $ini->path($namespace . '.bonusIds')))[0] ?? null;
-
-                    if ($bonusId !== null) {
-                        $nsTag .= ':' . (string) $bonusId;
-                    }
-                }
-
-                $tags[$nsTag] ??= [];
-
-                \array_push($tags[$nsTag], ...$ini->getItemIdArray($namespace, $bonusId));
-            }
         }
 
         $hashes = [];
 
         foreach ($items as $index => $item) {
-            $hashes[$index] = $this->getItemHash($item);
+            $hashes[$index] = $item->hash;
         }
 
         foreach (\array_diff(\array_keys($hashes), \array_keys(\array_unique($hashes))) as $index) {
             unset($items[$index]);
         }
 
-        return [
-            \array_values($items),
-            $tags,
-        ];
+        return \array_values($items);
     }
 
     public static function fromFile(string $fileName): static
@@ -110,18 +89,6 @@ class Environment
         return new static(
             ini: Ini::fromFile($fileName),
         );
-    }
-
-    // @todo Support Pets here
-    public function getItemHash(Item $item): string
-    {
-        $hash = (string) $item->itemId;
-
-        if (\sizeof($item->bonusIds) > 0) {
-            $hash .= ':' . \join(':', $item->bonusIds);
-        }
-
-        return $hash;
     }
 
     public function hasItem(\stdClass $item): bool
@@ -172,7 +139,7 @@ class Environment
 
         foreach (\array_keys($this->itemList) as $index) {
             if (!\in_array($index, $this->cachedItemLookups)) {
-                $items[$this->getItemHash($this->itemList[$index])] = $this->itemList[$index];
+                $items[$this->itemList[$index]->hash] = $this->itemList[$index];
             }
         }
 
