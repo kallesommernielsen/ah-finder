@@ -173,7 +173,7 @@ class Report
 
         foreach ($this->notFoundItems as $item) {
             $html .= '<tr>' . \PHP_EOL;
-            $html .= '<td class="p-1" colspan="3">' . \PHP_EOL;
+            $html .= '<td class="p-1">' . \PHP_EOL;
 
             $html .= \sprintf(
                 '<a href="%s" target="_blank" data-wowhead="%s">(item #%d)</a>',
@@ -182,8 +182,12 @@ class Report
 
             $html .= '</td>' . \PHP_EOL;
             $html .= '<td class="p-1">' . \PHP_EOL;
+            $html .= '&nbsp;' . \PHP_EOL;
+            $html .= '</td>' . \PHP_EOL;
+            $html .= '<td class="p-1">' . \PHP_EOL;
             $html .= '<span class="badge rounded-pill text-bg-warning">Unavailable</span>' . \PHP_EOL;
-
+            $html .= '</td>' . \PHP_EOL;
+            $html .= '<td class="p-1">' . \PHP_EOL;
 
             foreach ($item->tags as $tag) {
                 $html .= \sprintf(
