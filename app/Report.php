@@ -28,7 +28,12 @@ class Report
 
     protected function getAvailableRealm(int $connectedRealmId): string
     {
-        return \join(', ', $this->realmMap[$connectedRealmId]);
+        return \join(', ', $this->realmMap[$connectedRealmId]['slugs']);
+    }
+
+    protected function getAvailableRealmCategory(int $connectedRealmId): string
+    {
+        return $this->realmMap[$connectedRealmId]['category'];
     }
 
     // @todo Support pets here
@@ -148,6 +153,9 @@ class Report
             $html .= $this->formatCurrencyWithIcons($price);
             $html .= '</td>' . \PHP_EOL;
             $html .= '<td class="p-1">' . \PHP_EOL;
+            $html .= '<span class="badge rounded-pill text-bg-info">' . \PHP_EOL;
+            $html .= $this->getAvailableRealmCategory($connectedRealmId);
+            $html .= '</span>' . \PHP_EOL;
             $html .= $this->getAvailableRealm($connectedRealmId);
             $html .= '</td>' . \PHP_EOL;
             $html .= '<td class="p-1">' . \PHP_EOL;

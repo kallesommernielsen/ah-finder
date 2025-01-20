@@ -13,10 +13,12 @@ readonly class Item
         public array $bonusIds,
         public array $tags,
     ) {
-        $this->hash = (string) $this->itemId;
+        $hash = (string) $this->itemId;
 
         if (\sizeof($this->bonusIds) > 1) {
-            $this->hash .= ':' . \join(':', $this->bonusIds);
+            $hash .= ':' . \join(':', $this->bonusIds);
         }
+
+        $this->hash = $hash;
     }
 }

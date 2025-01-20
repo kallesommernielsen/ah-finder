@@ -56,6 +56,7 @@ class RealmSyncCommand extends Command
 
             $realms[] = [
                 'id' => $connectedRealm->id,
+                'category' => $realm->category,
                 'slugs' => $slugs,
             ];
         }

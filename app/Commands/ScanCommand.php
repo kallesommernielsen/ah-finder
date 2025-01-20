@@ -105,7 +105,10 @@ class ScanCommand extends Command
         );
 
         foreach ($realms as $realm) {
-            $map[$realm->id] = $realm->slugs;
+            $map[$realm->id] = [
+                'category' => $realm->category,
+                'slugs' => $realm->slugs,
+            ];
         }
 
         return $map;
