@@ -77,8 +77,9 @@ class Environment
             $hashes[$index] = $item->hash;
         }
 
+        // @todo Fix tags merging for dups
         foreach (\array_diff(\array_keys($hashes), \array_keys(\array_unique($hashes))) as $index) {
-            unset($items[$index]);
+            unset($items[$index], $hashes[$index]);
         }
 
         return \array_values($items);
