@@ -15,7 +15,7 @@ readonly class Item
     ) {
         $hash = (string) $this->itemId;
 
-        if (\sizeof($this->bonusIds) > 1) {
+        if (\sizeof($this->bonusIds) > 0) {
             $hash .= ':' . \join(':', $this->bonusIds);
         }
 
