@@ -60,6 +60,17 @@ class Environment
     {
         $items = [];
 
+        if ($ini->hasNamespace('test')) {
+            try {
+                $items = $ini->getItemArray('test');
+
+                if (\sizeof($items) > 0) {
+                    goto done;
+                }
+            } catch (\InvalidArgumentException) {
+            }
+        }
+
         foreach ($ini->getNamespaces() as $namespace) {
             if (!\str_contains($namespace, '/')) {
                 continue;
@@ -71,18 +82,20 @@ class Environment
             );
         }
 
-        $hashes = [];
+        done: {
+            $hashes = [];
 
-        foreach ($items as $index => $item) {
-            $hashes[$index] = $item->hash;
+            foreach ($items as $index => $item) {
+                $hashes[$index] = $item->hash;
+            }
+
+            // @todo Fix tags merging for dups
+            foreach (\array_diff(\array_keys($hashes), \array_keys(\array_unique($hashes))) as $index) {
+                unset($items[$index], $hashes[$index]);
+            }
+
+            return \array_values($items);
         }
-
-        // @todo Fix tags merging for dups
-        foreach (\array_diff(\array_keys($hashes), \array_keys(\array_unique($hashes))) as $index) {
-            unset($items[$index], $hashes[$index]);
-        }
-
-        return \array_values($items);
     }
 
     public static function fromFile(string $fileName): static

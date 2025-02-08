@@ -68,20 +68,14 @@ class Ini
         return $value;
     }
 
+    public function hasNamespace(string $namespace): bool
+    {
+        return \array_key_exists($namespace, $this->directives);
+    }
+
     public function getNamespaces(): array
     {
         return \array_keys($this->directives);
-    }
-
-    public function getInt(string $path): int
-    {
-        $value = $this->path($path);
-
-        if (!\is_int($value)) {
-            throw new \UnexpectedValueException('Unexpected value, expecting int');
-        }
-
-        return $value;
     }
 
     public function getIntArray(string $path): array
@@ -183,25 +177,6 @@ class Ini
                     );
                 }
             }
-        }
-
-        return $items;
-    }
-
-    public function getItemIdArray(string $path, ?int $bonusId): array
-    {
-        $items = [];
-
-        foreach ($this->getItemArray($path) as $item) {
-            if (!$item instanceof Item) {
-                continue;
-            }
-
-            if ($bonusId !== null && !\in_array($bonusId, $item->bonusIds)) {
-                continue;
-            }
-
-            $items[] = $item->itemId;
         }
 
         return $items;
