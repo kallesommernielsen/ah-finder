@@ -87,7 +87,7 @@ class ScanCommand extends Command
                     ? 's'
                     : '',
                 \sizeof($notFoundItems),
-                \sizeof($this->env->itemList) > 1
+                \sizeof($notFoundItems) > 1
                     ? 's'
                     : '',
             ),

@@ -6,10 +6,12 @@ namespace App\Config;
 
 readonly class Pet
 {
-    public int $itemId = 82800;
+    public int $itemId;
 
     public function __construct(
         public int $speciesId,
+        public ?int $cagedItemId = null,
     ) {
+        $this->itemId = 82800;
     }
 }

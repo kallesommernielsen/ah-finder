@@ -40,10 +40,6 @@ class Environment
             ),
         );
 
-        if (!\is_writable($ini->getString('database.realms'))) {
-            throw new \RuntimeException('Realms file is not writable');
-        }
-
         if (!\is_dir($ini->getString('database.auction_houses'))) {
             throw new \RuntimeException('Auction house save directory does not exists');
         }

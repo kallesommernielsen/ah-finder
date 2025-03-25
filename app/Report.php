@@ -61,7 +61,7 @@ class Report
 
         yield \sprintf(
             '%d items',
-            \sizeof($this->items),
+            \sizeof($this->items) - \sizeof($this->notFoundItems),
         );
 
         yield \sprintf(
