@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App;
 
 use App\Config\Item;
+use App\Config\Pet;
 
 class Report
 {
@@ -109,9 +110,20 @@ class Report
         return $html;
     }
 
-    // @todo Support pets here
-    protected function getWowheadInfo(Item $item): array
+    protected function getWowheadInfo(Item|Pet $item): array
     {
+        if ($item instanceof Pet) {
+            return [
+                \sprintf(
+                    'https://www.wowhead.com/battle-pet/%d',
+                    $item->speciesId,
+                ),
+                '',
+                'pet',
+                $item->speciesId,
+            ];
+        }
+
         $bonusIds = $item->bonusIds;
 
         return [
@@ -128,6 +140,7 @@ class Report
                         ? \join(':', $bonusIds)
                         : $item->itemId,
             ),
+            'item',
             $item->itemId,
         ];
     }
@@ -144,7 +157,7 @@ class Report
             $html .= '<td class="p-1">' . \PHP_EOL;
 
             $html .= \sprintf(
-                '<a href="%s" target="_blank" data-wowhead="%s">(item #%d)</a>',
+                '<a href="%s" target="_blank" data-wowhead="%s">(%s #%d)</a>',
                 ...$this->getWowheadInfo($item),
             );
 

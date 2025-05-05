@@ -51,7 +51,6 @@ class Environment
         $this->itemList = $this->getItemList($ini);
     }
 
-    // @todo Support Pets here
     protected function getItemList(Ini $ini): array
     {
         $items = [];
@@ -79,13 +78,12 @@ class Environment
         }
 
         done: {
-            $hashes = [];
+            $hashes = \array_map(
+                static fn(Item|Pet $thing): string => $thing->hash,
+                $items,
+            );
 
-            foreach ($items as $index => $item) {
-                $hashes[$index] = $item->hash;
-            }
-
-            // @todo Fix tags merging for dups
+            // @todo Fix tags merging for duplicates
             foreach (\array_diff(\array_keys($hashes), \array_keys(\array_unique($hashes))) as $index) {
                 unset($items[$index], $hashes[$index]);
             }
