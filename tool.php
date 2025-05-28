@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-namespace {
-
+namespace
+{
     use App\Config\Environment;
     use App\Dispatcher;
 
@@ -12,6 +12,6 @@ namespace {
     (new Dispatcher(__DIR__ . '/app/Commands'))
         ->dispatch(
             $argv[1] ?? 'scan',
-            Environment::fromFile(__DIR__ . '/config/app.ini'),
+            Environment::fromDirectory(__DIR__ . '/config'),
         );
 }

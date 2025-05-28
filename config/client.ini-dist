@@ -1,0 +1,15 @@
+[client]
+client_id =
+client_secret =
+region = EU
+locale = en-GB
+
+[database]
+realms = db/realms.json
+auction_houses = db/auction_houses
+
+; eu-ps-realm-222 (Plunderstorm)
+blacklisted_realms[] = 5911
+
+; Russian requires a different language game client for cyrillic
+blacklisted_categories[] = Russian

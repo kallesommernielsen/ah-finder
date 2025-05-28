@@ -92,10 +92,20 @@ class Environment
         }
     }
 
-    public static function fromFile(string $fileName): static
+    public static function fromDirectory(string $directory): static
     {
+        $inis = [];
+
+        foreach (\glob($directory . '/*.ini') as $iniFile) {
+            $inis[] = Ini::fromFile($iniFile)->directives;
+        }
+
         return new static(
-            ini: Ini::fromFile($fileName),
+            ini: new Ini(
+                directives: \array_merge(
+                    ...$inis,
+                ),
+            ),
         );
     }
 

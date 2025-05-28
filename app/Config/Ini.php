@@ -10,7 +10,7 @@ class Ini
      * @param array<mixed> $directives
      */
     final public function __construct(
-        protected array $directives = [],
+        public readonly array $directives = [],
     ) {
     }
 
