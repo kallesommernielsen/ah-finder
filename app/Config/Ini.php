@@ -146,7 +146,7 @@ class Ini
                 $bonusIds = \array_map(\intval(...), \explode(':', $bonusIds));
             }
 
-            $items[] = new Item(
+            $item = new Item(
                 itemId: (int) $v,
                 bonusIds: $this->has($path . '.bonusIds')
                     ? \array_unique(
@@ -161,6 +161,12 @@ class Ini
                     : $bonusIds,
                 tags: $tags,
             );
+
+            if (\array_key_exists($item->hash, $items)) {
+                $items[$item->hash] = $this->mergeItem($items[$item->hash], $item);
+            } else {
+                $items[$item->hash] = $item;
+            }
         }
 
         if ($this->has($path . '.pet')) {
@@ -172,6 +178,7 @@ class Ini
                         throw new \UnexpectedValueException('Unexpected value, expecting string|int-array');
                     }
 
+                    // @todo Fix pets
                     $items[] = new Pet(
                         speciesId: (int) $v,
                     );
@@ -180,6 +187,20 @@ class Ini
         }
 
         return $items;
+    }
+
+    public function mergeItems(Item $a, Item $b): Item
+    {
+        return new Item(
+            itemId: $a->itemId,
+            bonusIds: $a->bonusIds,
+            tags: \array_unique(
+                \array_merge(
+                    $a->tags,
+                    $b->tags,
+                ),
+            ),
+        );
     }
 
     /**

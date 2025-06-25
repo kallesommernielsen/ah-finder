@@ -60,7 +60,7 @@ class Environment
                 $items = $ini->getItemArray('test');
 
                 if (\sizeof($items) > 0) {
-                    goto done;
+                    return \array_values($items);
                 }
             } catch (\InvalidArgumentException) {
             }
@@ -71,25 +71,20 @@ class Environment
                 continue;
             }
 
-            $items = \array_merge(
-                $items,
-                $ini->getItemArray($namespace),
-            );
-        }
-
-        done: {
-            $hashes = \array_map(
-                static fn(Item|Pet $thing): string => $thing->hash,
-                $items,
-            );
-
-            // @todo Fix tags merging for duplicates
-            foreach (\array_diff(\array_keys($hashes), \array_keys(\array_unique($hashes))) as $index) {
-                unset($items[$index], $hashes[$index]);
+            if (!\str_contains($namespace, 't3')) {
+                continue;
             }
 
-            return \array_values($items);
+            foreach ($ini->getItemArray($namespace) as $item) {
+                if (\array_key_exists($item->hash, $items)) {
+                    $items[$item->hash] = $ini->mergeItems($items[$item->hash], $item);
+                } else {
+                    $items[$item->hash] = $item;
+                }
+            }
         }
+
+        return \array_values($items);
     }
 
     public static function fromDirectory(string $directory): static
