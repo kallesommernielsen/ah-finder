@@ -73,7 +73,7 @@ class Environment
 
             foreach ($ini->getItemArray($namespace) as $item) {
                 if (\array_key_exists($item->hash, $items)) {
-                    $items[$item->hash] = $ini->mergeItems($items[$item->hash], $item);
+                    $items[$item->hash] = $ini->merge($items[$item->hash], $item);
                 } else {
                     $items[$item->hash] = $item;
                 }
@@ -103,35 +103,37 @@ class Environment
     public function hasItem(\stdClass $item): bool
     {
         foreach ($this->itemList as $index => $itemEntry) {
-            if ($item->id === $itemEntry->itemId) {
-                if ($itemEntry instanceof Item && $itemEntry->bonusIds) {
-                    if (!\property_exists($item, 'bonus_lists') || !\is_array($item->bonus_lists)) {
+            if ($itemEntry instanceof Item) {
+                if ($item->id === $itemEntry->itemId) {
+                    if ($itemEntry instanceof Item && $itemEntry->bonusIds) {
+                        if (!\property_exists($item, 'bonus_lists') || !\is_array($item->bonus_lists)) {
+                            continue;
+                        }
+
+                        foreach ($item->bonus_lists as $bonusId) {
+                            if (\in_array($bonusId, $itemEntry->bonusIds)) {
+                                goto found;
+                            }
+                        }
+
                         continue;
                     }
 
-                    foreach ($item->bonus_lists as $bonusId) {
-                        if (\in_array($bonusId, $itemEntry->bonusIds)) {
-                            goto found;
-                        }
+                    found: {
+                        $this->cachedItemLookups[\spl_object_hash($item)] = $index;
                     }
 
-                    continue;
+                    return true;
                 }
-
-                // @todo Support Pets here
-
-                found: {
-                    $this->cachedItemLookups[\spl_object_hash($item)] = $index;
-                }
-
-                return true;
             }
+
+            // @todo Support Pets here
         }
 
         return false;
     }
 
-    public function getItem(\stdClass $item): Item
+    public function getItem(\stdClass $item): Item|Pet
     {
         $hash = \spl_object_hash($item);
 

@@ -125,47 +125,54 @@ class Ini
 
     public function getItemArray(string $path): array
     {
-        $value = $this->path($path  . '.item');
-
-        if (!\is_array($value)) {
-            throw new \UnexpectedValueException('Unexpected value, expecting string-array');
+        if (!$this->has($path . '.item') && !$this->has($path . '.pet')) {
+            throw new \UnexpectedValueException('Unexpected value, expecting string-array|int-array');
         }
 
         $items = [];
-        $tags = \explode('/', $path);
 
-        foreach ($value as $v) {
-            if (!\is_string($v) && !\is_int($v)) {
-                throw new \UnexpectedValueException('Unexpected value, expecting string|int-array');
+        if ($this->has($path . '.item')) {
+            $value = $this->path($path . '.item');
+
+            if (!\is_array($value)) {
+                throw new \UnexpectedValueException('Unexpected value, expecting string-array');
             }
 
-            $bonusIds = [];
+            $tags = \explode('/', $path);
 
-            if (\str_contains((string) $v, ':')) {
-                [$v, $bonusIds] = \explode(':', (string) $v);
-                $bonusIds = \array_map(\intval(...), \explode(':', $bonusIds));
-            }
+            foreach ($value as $v) {
+                if (!\is_string($v) && !\is_int($v)) {
+                    throw new \UnexpectedValueException('Unexpected value, expecting string|int-array');
+                }
 
-            $item = new Item(
-                itemId: (int) $v,
-                bonusIds: $this->has($path . '.bonusIds')
-                    ? \array_unique(
-                        \array_merge(
-                            $bonusIds,
-                            \array_map(
-                                \intval(...),
-                                \explode(':', (string) $this->getScalar($path . '.bonusIds')),
+                $bonusIds = [];
+
+                if (\str_contains((string)$v, ':')) {
+                    [$v, $bonusIds] = \explode(':', (string)$v);
+                    $bonusIds = \array_map(\intval(...), \explode(':', $bonusIds));
+                }
+
+                $item = new Item(
+                    itemId: (int)$v,
+                    bonusIds: $this->has($path . '.bonusIds')
+                        ? \array_unique(
+                            \array_merge(
+                                $bonusIds,
+                                \array_map(
+                                    \intval(...),
+                                    \explode(':', (string)$this->getScalar($path . '.bonusIds')),
+                                ),
                             ),
-                        ),
-                    )
-                    : $bonusIds,
-                tags: $tags,
-            );
+                        )
+                        : $bonusIds,
+                    tags: $tags,
+                );
 
-            if (\array_key_exists($item->hash, $items)) {
-                $items[$item->hash] = $this->mergeItems($items[$item->hash], $item);
-            } else {
-                $items[$item->hash] = $item;
+                if (\array_key_exists($item->hash, $items)) {
+                    $items[$item->hash] = $this->mergeItems($items[$item->hash], $item);
+                } else {
+                    $items[$item->hash] = $item;
+                }
             }
         }
 
@@ -173,20 +180,48 @@ class Ini
             $value = $this->path($path . '.pet');
 
             if (\is_array($value)) {
+                $tags = \explode('/', $path);
+
                 foreach ($value as $v) {
                     if (!\is_string($v) && !\is_int($v)) {
                         throw new \UnexpectedValueException('Unexpected value, expecting string|int-array');
                     }
 
-                    // @todo Fix pets
-                    $items[] = new Pet(
+                    $cagedItemId = null;
+
+                    if (\str_contains((string) $v, ':')) {
+                        [$v, $cagedItemId] = \explode(':', (string) $v);
+                    }
+
+                    $item = new Pet(
                         speciesId: (int) $v,
+                        tags: $tags,
+                        cagedItemId: $cagedItemId,
                     );
+
+                    if (\array_key_exists($item->hash, $items)) {
+                        $items[$item->hash] = $this->mergePets($items[$item->hash], $item);
+                    } else {
+                        $items[$item->hash] = $item;
+                    }
                 }
             }
         }
 
         return $items;
+    }
+
+    public function merge(Item|Pet $a, Item|Pet $b): Item|Pet
+    {
+        if ($a::class !== $b::class) {
+            throw new \UnexpectedValueException('Both arguments must be of the same type');
+        }
+
+        if ($a instanceof Pet) {
+            return $this->mergePets($a, $b);
+        }
+
+        return $this->mergeItems($a, $b);
     }
 
     public function mergeItems(Item $a, Item $b): Item
@@ -200,6 +235,20 @@ class Ini
                     $b->tags,
                 ),
             ),
+        );
+    }
+
+    public function mergePets(Pet $a, Pet $b): Pet
+    {
+        return new Pet(
+            speciesId: $a->speciesId,
+            tags: \array_unique(
+                \array_merge(
+                    $a->tags,
+                    $b->tags,
+                ),
+            ),
+            cagedItemId: $a->cagedItemId,
         );
     }
 

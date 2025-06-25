@@ -9,7 +9,6 @@ readonly class Pet
     public int $itemId;
     public string $hash;
 
-    // @todo Fix $tags
     public function __construct(
         public int $speciesId,
         public array $tags,
@@ -17,7 +16,10 @@ readonly class Pet
     ) {
         $this->itemId = 82800;
 
-        // @todo Fix
-        $this->hash = '';
+        if ($this->cagedItemId !== null) {
+            $this->hash = 'p:'  . ((string) $this->speciesId) . ':' . ((string) $this->cagedItemId);
+        } else {
+            $this->hash = 'p:' . ((string) $this->speciesId);
+        }
     }
 }
