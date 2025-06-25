@@ -163,7 +163,7 @@ class Ini
             );
 
             if (\array_key_exists($item->hash, $items)) {
-                $items[$item->hash] = $this->mergeItem($items[$item->hash], $item);
+                $items[$item->hash] = $this->mergeItems($items[$item->hash], $item);
             } else {
                 $items[$item->hash] = $item;
             }

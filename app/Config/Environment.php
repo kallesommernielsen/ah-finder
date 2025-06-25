@@ -71,10 +71,6 @@ class Environment
                 continue;
             }
 
-            if (!\str_contains($namespace, 't3')) {
-                continue;
-            }
-
             foreach ($ini->getItemArray($namespace) as $item) {
                 if (\array_key_exists($item->hash, $items)) {
                     $items[$item->hash] = $ini->mergeItems($items[$item->hash], $item);
